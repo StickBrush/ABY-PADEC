@@ -484,6 +484,9 @@ public:
 	void ExportCircuitInBristolFormat(share* ingates_client, share* ingates_server,
 			share* outgates, const char* filename);
 
+	void ModdedExportCircuitInBristolFormat(std::vector<uint32_t> ingates_client, std::vector<uint32_t> ingates_server, std::vector<uint32_t> outgates,
+											const char *filename);
+
 protected:
 	virtual void UpdateInteractiveQueue(uint32_t gateid) = 0;
 	virtual void UpdateLocalQueue(uint32_t gateid) = 0;

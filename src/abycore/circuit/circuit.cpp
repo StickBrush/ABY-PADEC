@@ -382,6 +382,15 @@ void Circuit::ExportCircuitInBristolFormat(share* ingates_client, share* ingates
 			outgates->get_wires(), filename);
 }
 
+void Circuit::ModdedExportCircuitInBristolFormat(std::vector<uint32_t> ingates_client, std::vector<uint32_t> ingates_server, std::vector<uint32_t> outgates,
+												 const char *filename)
+{
+	//only works for Boolean circuits
+	assert(m_eCirctype == C_BOOLEAN);
+	m_cCircuit->ExportCircuitInBristolFormat(ingates_client, ingates_server,
+											 outgates, filename);
+}
+
 share* create_new_share(uint32_t size, Circuit* circ) {
 	switch (circ->GetCircuitType()) {
 	case C_BOOLEAN:
