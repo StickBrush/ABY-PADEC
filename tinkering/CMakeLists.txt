@@ -13,8 +13,13 @@ elseif(NOT ABY_FOUND AND NOT TARGET ABY::aby)
     add_subdirectory(extern/ABY)
 endif()
 
-add_executable(tinkering_server tinkering_server.cpp)
-add_executable(tinkering_client tinkering_client.cpp)
+#add_executable(tinkering_server tinkering_server.cpp)
+#add_executable(tinkering_client tinkering_client.cpp)
 
-target_link_libraries(tinkering_server ABY::aby ENCRYPTO_utils::encrypto_utils)
-target_link_libraries(tinkering_client ABY::aby ENCRYPTO_utils::encrypto_utils)
+add_library(psiclient STATIC circ_lib/circs_client.cpp)
+add_library(psiserver STATIC circ_lib/circs_server.cpp)
+
+target_link_libraries(psiclient ABY::aby ENCRYPTO_utils::encrypto_utils)
+target_link_libraries(psiserver ABY::aby ENCRYPTO_utils::encrypto_utils)
+#target_link_libraries(tinkering_server ABY::aby ENCRYPTO_utils::encrypto_utils)
+#target_link_libraries(tinkering_client ABY::aby ENCRYPTO_utils::encrypto_utils)

@@ -1,28 +1,20 @@
-#include "../extern/ABY/src/abycore/circuit/booleancircuits.h"
-#include "../extern/ABY/src/abycore/circuit/arithmeticcircuits.h"
-#include "../extern/ABY/src/abycore/circuit/circuit.h"
-#include "../extern/ABY/src/abycore/sharing/sharing.h"
-#include "../extern/ABY/src/abycore/aby/abyparty.h"
-#include "../extern/ABY/src/abycore/ABY_utils/ABYconstants.h"
-#include <math.h>
-#include <cassert>
+#include "circs_client.h"
 
 using namespace std;
 
-Circuit* createCircuit(ABYParty *party, e_sharing chosen_sharing)
+Circuit *createCircuit(ABYParty *party, e_sharing chosen_sharing)
 {
-    vector<Sharing*> &sharings = party->GetSharings();
+    vector<Sharing *> &sharings = party->GetSharings();
     Circuit *circuit = sharings[chosen_sharing]->GetCircuitBuildRoutine();
     return circuit;
 }
 
-share *megaCircSingleInput(ABYParty *party, uint32_t input, uint32_t bitlen = 32)
+share *megaCircSingleInput(ABYParty *party, uint32_t input, uint32_t bitlen)
 {
     BooleanCircuit *circuit = (BooleanCircuit *)createCircuit(party, S_BOOL);
 
     share *client_input = circuit->PutINGate(input, bitlen, CLIENT);
     share *server_input = circuit->PutDummyINGate(bitlen);
-   
 
     share *tier_1 = circuit->PutDummyINGate(1);
     share *tier_2 = circuit->PutDummyINGate(1);
@@ -103,7 +95,7 @@ share *within_inner(BooleanCircuit *bc, share *x_1_server, share *x_2_server, sh
     return s_out;
 }
 
-share *megaCircMultiInput(ABYParty *party, vector<uint32_t> input, uint32_t bitlen = 32)
+share *megaCircMultiInput(ABYParty *party, vector<uint32_t> input, uint32_t bitlen)
 {
     BooleanCircuit *circuit = (BooleanCircuit *)createCircuit(party, S_BOOL);
 
@@ -128,52 +120,3 @@ share *megaCircMultiInput(ABYParty *party, vector<uint32_t> input, uint32_t bitl
 
     return s_out;
 }
-
-/*
-share *range(ABYParty *party, uint32_t x, uint32_t y, uint32_t bitlen = 32)
-{
-    // BE WARNED! When executing this method, you want to get the sqrt of the output rather than the plain output!
-    Circuit *circuit = createCircuit(party, S_BOOL);
-
-    share *x_server, *x_client, *y_server, *y_client, *s_out;
-
-    x_server = circuit->PutDummyINGate(bitlen);
-    y_server = circuit->PutDummyINGate(bitlen);
-
-    x_client = circuit->PutINGate(x, bitlen, CLIENT);
-    y_client = circuit->PutINGate(y, bitlen, CLIENT);
-
-    share *check_x, *check_x_inv, *t_a, *t_b, *res_x;
-
-    BooleanCircuit* bc = (BooleanCircuit*) circuit;
-
-    // (x1-x2)^2
-    //check_x = bc->PutGTGate(x_server, x_client); // Discover the larger X value
-    //check_x_inv = bc->PutINVGate(check_x);
-    //t_a = bc->PutMUXGate(x_server, x_client, check_x);     // Larger X
-    //t_b = bc->PutMUXGate(x_server, x_client, check_x_inv); // Smaller X
-    //res_x = bc->PutSUBGate(t_a, t_b);                      //(Larger X - Smaller X)
-
-    //Bristol ver.
-    res_x = bc->PutSUBGate(x_server, x_client);
-    res_x = bc->PutMULGate(res_x, res_x); //(Larger X - Smaller X)^2
-
-    share *check_y, *check_y_inv, *res_y;
-    // (y1-y2)^2
-    //check_y = bc->PutGTGate(y_server, y_client); // Discover the larger y value
-    //check_y_inv = bc->PutINVGate(check_y);
-    //t_a = bc->PutMUXGate(y_server, y_client, check_y);     // Larger y
-    //t_b = bc->PutMUXGate(y_server, y_client, check_y_inv); // Smaller y
-    //res_y = bc->PutSUBGate(t_a, t_b);                      //(Larger y - Smaller y)
-
-    // Bristol ver.
-    res_y = bc->PutSUBGate(y_server, y_client);
-    res_y = bc->PutMULGate(res_y, res_y); //(Larger y - Smaller y)^2
-
-    s_out = bc->PutADDGate(res_x, res_y);
-
-    s_out = circuit->PutOUTGate(s_out, ALL);
-
-    return s_out;
-}
-*/
