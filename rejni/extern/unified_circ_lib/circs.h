@@ -10,7 +10,8 @@
 
 using namespace std;
 
-enum SingleCircuitType {
+enum SingleCircuitType
+{
     CIRC_LESS_THAN,
     CIRC_GREATER_THAN,
     CIRC_EQUAL,
@@ -18,14 +19,18 @@ enum SingleCircuitType {
     CIRC_OR
 };
 
-enum MultiCircuitType {
+enum MultiCircuitType
+{
     CIRC_RANGE,
     CIRC_WITHIN
 };
 
 ABYParty *createServer(string ip_address = "127.0.0.1", int port = 7766U, seclvl seclvl = LT, uint32_t bitlen = 32U, uint32_t threads = 1U, string aby_circ_dir = "./extern/ABY/bin/circ");
-Circuit *createCircuit(ABYParty *party, e_sharing chosen_sharing = S_BOOL);
-share *megaCircSingleInput(ABYParty *party, uint32_t input, SingleCircuitType circ, uint32_t bitlen = 32);
+ABYParty *createClient(string ip_address = "127.0.0.1", int port = 7766U, seclvl seclvl = LT, uint32_t bitlen = 32U, uint32_t threads = 1U, string aby_circ_dir = "./extern/ABY/bin/circ");
+Circuit *createCircuit(ABYParty *party);
+share *megaCircSingleInputServer(ABYParty *party, uint32_t input, SingleCircuitType circ, uint32_t bitlen = 32);
+share *megaCircSingleInputClient(ABYParty *party, uint32_t input, uint32_t bitlen = 32);
 share *range_inner(BooleanCircuit *bc, share *x_server, share *y_server, share *x_client, share *y_client);
 share *within_inner(BooleanCircuit *bc, share *x_1_server, share *x_2_server, share *y_1_server, share *y_2_server, share *x_client, share *y_client);
-share *megaCircMultiInput(ABYParty *party, vector<uint32_t> input, MultiCircuitType circ, uint32_t bitlen = 32);
+share *megaCircMultiInputServer(ABYParty *party, vector<uint32_t> input, MultiCircuitType circ, uint32_t bitlen = 32);
+share *megaCircMultiInputClient(ABYParty *party, vector<uint32_t> input, uint32_t bitlen = 32);

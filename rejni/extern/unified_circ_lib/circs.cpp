@@ -1,10 +1,15 @@
-#include "circs_server.h"
+#include "circs.h"
 
 using namespace std;
 
 ABYParty *createServer(string ip_address, int port, seclvl seclvl, uint32_t bitlen, uint32_t threads, string aby_circ_dir)
 {
     return new ABYParty(SERVER, ip_address, (uint16_t)port, seclvl, bitlen, threads, MT_OT, 65536U, aby_circ_dir);
+}
+
+ABYParty *createClient(string ip_address, int port, seclvl seclvl, uint32_t bitlen, uint32_t threads, string aby_circ_dir)
+{
+    return new ABYParty(CLIENT, ip_address, (uint16_t)port, seclvl, bitlen, threads, MT_OT, 65536U, aby_circ_dir);
 }
 
 Circuit *createCircuit(ABYParty *party, e_sharing chosen_sharing)
@@ -14,7 +19,7 @@ Circuit *createCircuit(ABYParty *party, e_sharing chosen_sharing)
     return circuit;
 }
 
-share *megaCircSingleInput(ABYParty *party, uint32_t input, SingleCircuitType circ, uint32_t bitlen)
+share *megaCircSingleInputServer(ABYParty *party, uint32_t input, SingleCircuitType circ, uint32_t bitlen)
 {
     BooleanCircuit *circuit = (BooleanCircuit *)createCircuit(party, S_BOOL);
 
@@ -64,6 +69,36 @@ share *megaCircSingleInput(ABYParty *party, uint32_t input, SingleCircuitType ci
     share *tier_1 = circuit->PutINGate(tier_1_value, 1, SERVER);
     share *tier_2 = circuit->PutINGate(tier_2_value, 1, SERVER);
     share *tier_3 = circuit->PutINGate(tier_3_value, 1, SERVER);
+
+    share *s_greater = circuit->PutGTGate(client_input, server_input);
+    share *s_less = circuit->PutGTGate(server_input, client_input);
+    share *s_equal = circuit->PutANDGate(circuit->PutINVGate(s_greater), circuit->PutINVGate(s_less));
+    share *s_and = circuit->PutANDGate(client_input, server_input);
+    share *s_or = circuit->PutORGate(client_input, server_input);
+
+    // Keep in mind: This outputs ina in case sel=1 and inb in case sel=0
+    share *tier_3_mux_a = circuit->PutMUXGate(s_less, s_greater, tier_3);
+    share *tier_3_mux_b = circuit->PutMUXGate(s_or, s_and, tier_3);
+
+    share *tier_2_mux = circuit->PutMUXGate(tier_3_mux_b, tier_3_mux_a, tier_2);
+
+    share *tier_1_mux = circuit->PutMUXGate(s_equal, tier_2_mux, tier_1);
+
+    share *s_out = circuit->PutOUTGate(tier_1_mux, SERVER);
+
+    return s_out;
+}
+
+share *megaCircSingleInputClient(ABYParty *party, uint32_t input, uint32_t bitlen)
+{
+    BooleanCircuit *circuit = (BooleanCircuit *)createCircuit(party, S_BOOL);
+
+    share *client_input = circuit->PutINGate(input, bitlen, CLIENT);
+    share *server_input = circuit->PutDummyINGate(bitlen);
+
+    share *tier_1 = circuit->PutDummyINGate(1);
+    share *tier_2 = circuit->PutDummyINGate(1);
+    share *tier_3 = circuit->PutDummyINGate(1);
 
     share *s_greater = circuit->PutGTGate(client_input, server_input);
     share *s_less = circuit->PutGTGate(server_input, client_input);
@@ -140,7 +175,7 @@ share *within_inner(BooleanCircuit *bc, share *x_1_server, share *x_2_server, sh
     return s_out;
 }
 
-share *megaCircMultiInput(ABYParty *party, vector<uint32_t> input, MultiCircuitType circ, uint32_t bitlen)
+share *megaCircMultiInputServer(ABYParty *party, vector<uint32_t> input, MultiCircuitType circ, uint32_t bitlen)
 {
     BooleanCircuit *circuit = (BooleanCircuit *)createCircuit(party, S_BOOL);
 
@@ -195,6 +230,32 @@ share *megaCircMultiInput(ABYParty *party, vector<uint32_t> input, MultiCircuitT
     y_client = circuit->PutDummyINGate(bitlen);
 
     share *tier_1_sel = circuit->PutINGate(tier_1, 1, SERVER);
+
+    share *s_range = range_inner(circuit, x_1_server, y_1_server, x_client, y_client);
+    share *s_within = within_inner(circuit, x_1_server, x_2_server, y_1_server, y_2_server, x_client, y_client);
+
+    share *tier_1_mux = circuit->PutMUXGate(s_within, s_range, tier_1_sel);
+
+    share *s_out = circuit->PutOUTGate(tier_1_mux, SERVER);
+
+    return s_out;
+}
+
+share *megaCircMultiInputClient(ABYParty *party, vector<uint32_t> input, uint32_t bitlen)
+{
+    BooleanCircuit *circuit = (BooleanCircuit *)createCircuit(party, S_BOOL);
+
+    share *x_1_server, *x_2_server, *x_client, *y_1_server, *y_2_server, *y_client;
+
+    x_1_server = circuit->PutDummyINGate(bitlen);
+    x_2_server = circuit->PutDummyINGate(bitlen);
+    y_1_server = circuit->PutDummyINGate(bitlen);
+    y_2_server = circuit->PutDummyINGate(bitlen);
+
+    x_client = circuit->PutINGate(input[0], bitlen, CLIENT);
+    y_client = circuit->PutINGate(input[1], bitlen, CLIENT);
+
+    share *tier_1_sel = circuit->PutDummyINGate(1);
 
     share *s_range = range_inner(circuit, x_1_server, y_1_server, x_client, y_client);
     share *s_within = within_inner(circuit, x_1_server, x_2_server, y_1_server, y_2_server, x_client, y_client);

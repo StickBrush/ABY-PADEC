@@ -26,15 +26,11 @@ include_directories(${JNI_INCLUDE_DIRS})
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
-set(SOURCE_FILES_CLIENT JNIClient.cpp extern/circ_lib/circs_client.cpp)
+set(NATIVE_FILES NativeMeth.cpp extern/unified_circ_lib/circs.cpp)
 
-set(SOURCE_FILES_SERVER JNIServer.cpp extern/circ_lib/circs_server.cpp)
+add_library(JNIMeth SHARED ${NATIVE_FILES})
 
-add_library(JNIClient SHARED ${SOURCE_FILES_CLIENT})
-add_library(JNIServer SHARED ${SOURCE_FILES_SERVER})
-
-target_link_libraries(JNIClient ABY::aby ENCRYPTO_utils::encrypto_utils)
-target_link_libraries(JNIServer ABY::aby ENCRYPTO_utils::encrypto_utils)
+target_link_libraries(JNIMeth ABY::aby ENCRYPTO_utils::encrypto_utils)
 
 #set_property(TARGET JNIClient PROPERTY POSITION_INDEPENDENT_CODE ON)
 
