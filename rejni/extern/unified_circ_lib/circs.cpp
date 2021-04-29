@@ -35,31 +35,26 @@ share *megaCircSingleInputServer(ABYParty *party, uint32_t input, SingleCircuitT
     switch (circ)
     {
     case CIRC_GREATER_THAN:
-        cout << "Chosen GT" << endl;
         tier_1_value = 0;
         tier_2_value = 0;
         tier_3_value = 0;
         break;
     case CIRC_LESS_THAN:
-        cout << "Chosen LT" << endl;
         tier_1_value = 0;
         tier_2_value = 0;
         tier_3_value = 1;
         break;
     case CIRC_AND:
-        cout << "Chosen AND" << endl;
         tier_1_value = 0;
         tier_2_value = 1;
         tier_3_value = 0;
         break;
     case CIRC_OR:
-        cout << "Chosen OR" << endl;
         tier_1_value = 0;
         tier_2_value = 1;
         tier_3_value = 1;
         break;
     case CIRC_EQUAL:
-        cout << "Chosen EQ" << endl;
         tier_1_value = 1;
         tier_2_value = 0;
         tier_3_value = 0;

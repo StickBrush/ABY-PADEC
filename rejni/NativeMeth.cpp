@@ -8,8 +8,6 @@
  */
 JNIEXPORT jint JNICALL Java_NativeMeth_singleInputServer(JNIEnv *env, jobject obj, jint input, jint type){
     SingleCircuitType s_type = static_cast<SingleCircuitType>(type);
-    
-    cerr << "Executing SingleInputServer" << endl;
 
     ABYParty *party = createServer();
 
@@ -30,7 +28,6 @@ JNIEXPORT jint JNICALL Java_NativeMeth_singleInputServer(JNIEnv *env, jobject ob
  * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_NativeMeth_singleInputClient(JNIEnv *env, jobject obj, jint input){
-    cerr << "Executing SingleInputClient" << endl;
 
     ABYParty *party = createClient();
 
@@ -47,7 +44,27 @@ JNIEXPORT void JNICALL Java_NativeMeth_singleInputClient(JNIEnv *env, jobject ob
  * Signature: ([II)I
  */
 JNIEXPORT jint JNICALL Java_NativeMeth_multiInputServer(JNIEnv *env, jobject obj, jintArray input, jint type){
-    return (jint)0;
+    MultiCircuitType m_type = static_cast<MultiCircuitType>(type);
+
+    jsize len = env->GetArrayLength(input);
+    jint *input_array = env->GetIntArrayElements(input, 0);
+    vector<uint32_t> input_vec;
+    for(int i=0;i<len;i++){
+        input_vec.push_back((uint32_t) input_array[i]);
+    }
+    env->ReleaseIntArrayElements(input, input_array, 0);
+
+    ABYParty *party = createServer();
+
+    share *output = megaCircMultiInputServer(party, input_vec, m_type);
+
+    party->ExecCircuit();
+
+    uint32_t clear_out = output->get_clear_value<uint32_t>();
+
+    delete party;
+
+    return (jint)clear_out;
 }
 
 /*
@@ -56,5 +73,20 @@ JNIEXPORT jint JNICALL Java_NativeMeth_multiInputServer(JNIEnv *env, jobject obj
  * Signature: ([I)V
  */
 JNIEXPORT void JNICALL Java_NativeMeth_multiInputClient(JNIEnv *env, jobject obj, jintArray input){
+    jsize len = env->GetArrayLength(input);
+    jint *input_array = env->GetIntArrayElements(input, 0);
+    vector<uint32_t> input_vec;
+    for (int i = 0; i < len; i++)
+    {
+        input_vec.push_back((uint32_t)input_array[i]);
+    }
+    env->ReleaseIntArrayElements(input, input_array, 0);
 
+    ABYParty *party = createClient();
+
+    megaCircMultiInputClient(party, input_vec);
+
+    party->ExecCircuit();
+
+    delete party;
 }
