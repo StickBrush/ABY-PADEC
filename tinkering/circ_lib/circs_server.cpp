@@ -2,6 +2,11 @@
 
 using namespace std;
 
+ABYParty *createServer(string ip_address, int port, seclvl seclvl, uint32_t bitlen, uint32_t threads, string aby_circ_dir)
+{
+    return new ABYParty(SERVER, ip_address, (uint16_t)port, seclvl, bitlen, threads, MT_OT, 65536U, aby_circ_dir);
+}
+
 Circuit *createCircuit(ABYParty *party, e_sharing chosen_sharing)
 {
     vector<Sharing *> &sharings = party->GetSharings();
